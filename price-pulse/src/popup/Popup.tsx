@@ -35,15 +35,28 @@ export default function Popup() {
   }
 
   const newProduct: Product = {
-    id: crypto.randomUUID(),
-    title: product.title,
-    price: parsePrice(product.price),
-    currentPrice: product.price,
-    website: product.website,
-    url: product.url,
-    image: product.image,
-    createdAt: Date.now(),
-  };
+  id: crypto.randomUUID(),
+
+  title: product.title,
+
+  website: product.website,
+
+  url: product.url,
+
+  image: product.image,
+
+  createdAt: Date.now(),
+
+  history: [
+    {
+      price: parsePrice(product.price),
+
+      displayPrice: product.price,
+
+      checkedAt: Date.now(),
+    },
+  ],
+};
 
   await StorageService.addProduct(newProduct);
 

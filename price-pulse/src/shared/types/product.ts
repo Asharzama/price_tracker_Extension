@@ -1,11 +1,9 @@
+import type { PriceHistory } from "./priceHistory";
+
 export interface Product {
   id: string;
 
   title: string;
-
-  price: number;
-
-  currentPrice: string;
 
   website: string;
 
@@ -14,4 +12,6 @@ export interface Product {
   image?: string;
 
   createdAt: number;
+
+  history: PriceHistory[];
 }
