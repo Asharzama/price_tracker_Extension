@@ -3,11 +3,11 @@ import InfoCard from "./components/InfoCard";
 import TrackButton from "./components/TrackButton";
 import Footer from "./components/Footer";
 
-import { StorageService } from "../shared/storage/storage";
 import type { Product } from "../shared/types/product";
 import { parsePrice } from "../shared/utils/price";
 import { useEffect, useState } from "react";
 import { useCurrentProduct } from "./hooks/useCurrentProduct";
+import { TrackingService } from "../shared/services/tracking.service";
 
 export default function Popup() {
   const { product, loading } = useCurrentProduct();
@@ -16,7 +16,7 @@ export default function Popup() {
 
   useEffect(() => {
     async function loadProducts() {
-      const storedProducts = await StorageService.getProducts();
+      const storedProducts = await TrackingService.getTrackedProducts();
       setProducts(storedProducts);
     }
 
@@ -29,7 +29,7 @@ export default function Popup() {
     return;
   }
 
-  if (await StorageService.isTracked(product.url)) {
+  if (await TrackingService.isTracked(product.url)) {
     alert("Already tracking this product.");
     return;
   }
@@ -58,13 +58,14 @@ export default function Popup() {
   ],
 };
 
-  await StorageService.addProduct(newProduct);
+  await TrackingService.trackProduct(newProduct);
 
-  const products = await StorageService.getProducts();
+  const products = await TrackingService.getTrackedProducts();
 
   setProducts(products);
 
-  console.log(products);
+  console.log("Tracked Products:", products);
+console.log("Count:", products.length);
 
   alert("Product added successfully!");
 };

@@ -14,29 +14,18 @@ export default defineManifest({
   },
 
   content_scripts: [
-  {
-    matches: [
-      "https://*.amazon.in/*",
-      "https://*.amazon.com/*",
-    ],
-    js: ["src/content/index.ts"],
-  },
-],
-
-  permissions: [
-  "storage",
-  "tabs",
-  "activeTab",
-  "notifications",
-],
-
-  host_permissions: [
-    "https://*.amazon.in/*",
-    "https://*.amazon.com/*",
+    {
+      matches: ["https://*.amazon.in/*", "https://*.amazon.com/*"],
+      js: ["src/content/content.ts"],
+    },
   ],
 
+  permissions: ["storage", "tabs", "activeTab", "notifications", "alarms"],
+
+  host_permissions: ["https://*.amazon.in/*", "https://*.amazon.com/*"],
+
   background: {
-  service_worker: "src/background/index.ts",
-  type: "module",
-},
+    service_worker: "src/background/background.ts",
+    type: "module",
+  },
 });
