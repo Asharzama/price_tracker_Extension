@@ -2,35 +2,41 @@ import Header from "./components/Header";
 import InfoCard from "./components/InfoCard";
 import TrackButton from "./components/TrackButton";
 import Footer from "./components/Footer";
-import { StorageService } from "../services/storage.service";
-import type { Product } from "../types/product";
+
+import { StorageService } from "../shared/storage/storage";
+import type { Product } from "../shared/types/product";
 import { useEffect, useState } from "react";
-import type { ScrapedProduct } from "../types/scrapedProduct";
-import { ProductService } from "../services/product.service";
+import { useCurrentProduct } from "./hooks/useCurrentProduct";
 
 export default function Popup() {
-  const [product, setProduct] = useState<ScrapedProduct | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  useEffect(() => {
-    async function loadProduct() {
-        const current =
-            await ProductService.getCurrentProduct();
+  const { product, loading } = useCurrentProduct();
 
-        setProduct(current);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    async function loadProducts() {
+      const storedProducts = await StorageService.getProducts();
+      setProducts(storedProducts);
     }
 
-    loadProduct();
+    loadProducts();
   }, []);
-  
+
   const handleTrack = async () => {
+    if (!product) {
+      alert("No product detected.");
+      return;
+    }
+
     const existingProducts = await StorageService.getProducts();
 
     const newProduct: Product = {
       id: crypto.randomUUID(),
-      title: "Test Product",
-      price: 999,
-      website: "amazon.in",
-      url: "https://amazon.in",
+      title: product.title,
+      price: product.price ?? 0,
+      website: product.website,
+      url: product.url,
+      image: product.image,
       createdAt: Date.now(),
     };
 
@@ -39,17 +45,40 @@ export default function Popup() {
     await StorageService.saveProducts(updatedProducts);
 
     setProducts(updatedProducts);
+
+    alert("Product added successfully!");
   };
+
   return (
     <main className="flex min-h-[500px] w-[360px] flex-col bg-slate-50">
-      <Header title="🟢 PricePulse" subtitle="Your Smart Price Tracker" />
+      <Header
+        title="🟢 PricePulse"
+        subtitle="Your Smart Price Tracker"
+      />
 
       <section className="flex flex-1 flex-col gap-4 p-4">
-        <InfoCard label="Website" value="amazon.in" />
+        <InfoCard
+          label="Website"
+          value={product?.website ?? "--"}
+        />
 
-        <InfoCard label="Product" value={product?.title ?? "No Product Detected"} />
+        <InfoCard
+          label="Product"
+          value={
+            loading
+              ? "Loading..."
+              : product?.title ?? "No Product Detected"
+          }
+        />
 
-        <InfoCard label="Price" value="--" />
+        <InfoCard
+          label="Price"
+          value={
+            product?.price != null
+              ? `₹${product.price}`
+              : "--"
+          }
+        />
 
         <TrackButton onClick={handleTrack} />
       </section>

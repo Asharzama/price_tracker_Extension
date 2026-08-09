@@ -19,11 +19,16 @@ export default defineManifest({
       "https://*.amazon.in/*",
       "https://*.amazon.com/*",
     ],
-    js: ["src/content/content.ts"],
+    js: ["src/content/index.ts"],
   },
 ],
 
-  permissions: ["storage", "tabs", "notifications"],
+  permissions: [
+  "storage",
+  "tabs",
+  "activeTab",
+  "notifications",
+],
 
   host_permissions: [
     "https://*.amazon.in/*",
@@ -31,7 +36,7 @@ export default defineManifest({
   ],
 
   background: {
-  service_worker: "src/background/background.ts",
+  service_worker: "src/background/index.ts",
   type: "module",
 },
 });

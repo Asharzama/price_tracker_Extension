@@ -1,4 +1,4 @@
-import type { ScrapedProduct } from "../types/scrapedProduct";
+import type { ScrapedProduct } from "../shared/types/scrapedProduct";
 
 export function scrapeAmazon(): ScrapedProduct | null {
   // Only scrape real product pages
