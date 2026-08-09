@@ -1,27 +1,14 @@
 import type { ScrapedProduct } from "../shared/types/scrapedProduct";
+import { scrapeAmazon } from "./sites/amazon";
 
-export function scrapeAmazon(): ScrapedProduct | null {
-  // Only scrape real product pages
-  const isProductPage =
-    window.location.pathname.includes("/dp/") ||
-    window.location.pathname.includes("/gp/product/");
+export function scrapeCurrentSite(): ScrapedProduct | null {
+  const host = window.location.hostname;
 
-  if (!isProductPage) {
-    console.log("❌ Not an Amazon product page");
-    return null;
+  switch (true) {
+    case host.includes("amazon."):
+      return scrapeAmazon();
+
+    default:
+      return null;
   }
-
-  const titleElement = document.querySelector("#productTitle");
-
-  if (!titleElement) {
-    console.log("❌ Product title not found");
-    return null;
-  }
-
-  return {
-    title: titleElement.textContent?.trim() ?? "",
-    price: null,
-    url: window.location.href,
-    website: window.location.hostname,
-  };
 }

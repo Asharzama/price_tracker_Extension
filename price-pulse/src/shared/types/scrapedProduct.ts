@@ -1,7 +1,7 @@
 export interface ScrapedProduct {
   title: string;
-  price: number | null;
-  url: string;
+  price: string;
   website: string;
+  url: string;
   image?: string;
 }

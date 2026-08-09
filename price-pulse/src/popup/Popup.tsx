@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 
 import { StorageService } from "../shared/storage/storage";
 import type { Product } from "../shared/types/product";
+import { parsePrice } from "../shared/utils/price";
 import { useEffect, useState } from "react";
 import { useCurrentProduct } from "./hooks/useCurrentProduct";
 
@@ -23,31 +24,37 @@ export default function Popup() {
   }, []);
 
   const handleTrack = async () => {
-    if (!product) {
-      alert("No product detected.");
-      return;
-    }
+  if (!product) {
+    alert("No product detected.");
+    return;
+  }
 
-    const existingProducts = await StorageService.getProducts();
+  if (await StorageService.isTracked(product.url)) {
+    alert("Already tracking this product.");
+    return;
+  }
 
-    const newProduct: Product = {
-      id: crypto.randomUUID(),
-      title: product.title,
-      price: product.price ?? 0,
-      website: product.website,
-      url: product.url,
-      image: product.image,
-      createdAt: Date.now(),
-    };
-
-    const updatedProducts = [...existingProducts, newProduct];
-
-    await StorageService.saveProducts(updatedProducts);
-
-    setProducts(updatedProducts);
-
-    alert("Product added successfully!");
+  const newProduct: Product = {
+    id: crypto.randomUUID(),
+    title: product.title,
+    price: parsePrice(product.price),
+    currentPrice: product.price,
+    website: product.website,
+    url: product.url,
+    image: product.image,
+    createdAt: Date.now(),
   };
+
+  await StorageService.addProduct(newProduct);
+
+  const products = await StorageService.getProducts();
+
+  setProducts(products);
+
+  console.log(products);
+
+  alert("Product added successfully!");
+};
 
   return (
     <main className="flex min-h-[500px] w-[360px] flex-col bg-slate-50">
@@ -62,6 +69,15 @@ export default function Popup() {
           value={product?.website ?? "--"}
         />
 
+<InfoCard
+          label="Image"
+          value={
+            loading
+              ? "Loading..."
+              : product?.image ?? "No Image Detected"
+          }
+        />
+
         <InfoCard
           label="Product"
           value={
@@ -73,11 +89,7 @@ export default function Popup() {
 
         <InfoCard
           label="Price"
-          value={
-            product?.price != null
-              ? `₹${product.price}`
-              : "--"
-          }
+          value={product?.price ?? "--"}
         />
 
         <TrackButton onClick={handleTrack} />

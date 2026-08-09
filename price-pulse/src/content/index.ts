@@ -1,4 +1,4 @@
-import { scrapeAmazon } from "./scraper";
+import { scrapeCurrentSite } from "./scraper";
 import type {
   ExtensionMessage,
   GetProductResponse,
@@ -15,7 +15,7 @@ chrome.runtime.onMessage.addListener(
     switch (message.type) {
       case "GET_PRODUCT": {
         const response: GetProductResponse = {
-          product: scrapeAmazon(),
+          product: scrapeCurrentSite(),
         };
 
         sendResponse(response);
