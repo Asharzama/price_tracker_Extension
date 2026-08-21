@@ -1,13 +1,12 @@
-console.log("🚀 Background worker loaded!");
+import { ALARM_NAMES } from "../shared/constants/alarms";
+import { MonitoringService } from "./services/monitoring.service";  
 
-chrome.runtime.onInstalled.addListener(() => {
-  console.log("✅ Extension installed!");
-
-  chrome.alarms.create("test-alarm", {
-    periodInMinutes: 1,
-  });
+chrome.alarms.create(ALARM_NAMES.PRICE_CHECK, {
+  periodInMinutes: 1,
 });
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-  console.log("⏰ Alarm fired:", alarm.name);
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name !== ALARM_NAMES.PRICE_CHECK) return;
+
+  await MonitoringService.checkAllProducts();
 });
