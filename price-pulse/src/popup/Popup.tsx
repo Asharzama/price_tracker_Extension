@@ -8,6 +8,7 @@ import { PriceUtil } from "../shared/utils/price";
 import { useEffect, useState } from "react";
 import { useCurrentProduct } from "./hooks/useCurrentProduct";
 import { TrackingService } from "../shared/services/tracking.service";
+import { PopupMonitoringService } from "./services/monitoring.service";
 import { StorageService } from "../shared/storage/storage";
 
 export default function Popup() {
@@ -15,6 +16,7 @@ export default function Popup() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [checkingPrices, setCheckingPrices] = useState(false);
 
   useEffect(() => {
     async function loadProducts() {
@@ -36,6 +38,31 @@ export default function Popup() {
     await StorageService.saveProducts(updatedProducts);
 
     setProducts(updatedProducts);
+  };
+
+  const handleCheckPrices = async () => {
+    if (checkingPrices) return;
+
+    setCheckingPrices(true);
+
+    try {
+      const success = await PopupMonitoringService.checkPrices();
+
+      if (!success) {
+        alert("Price check failed.");
+        return;
+      }
+
+      const updatedProducts = await StorageService.getProducts();
+
+      setProducts(updatedProducts);
+    } catch (error) {
+      console.error("Price check failed:", error);
+
+      alert("Unable to check prices.");
+    } finally {
+      setCheckingPrices(false);
+    }
   };
 
   const handleTrack = async () => {
@@ -117,6 +144,15 @@ export default function Popup() {
         <InfoCard label="Price" value={product?.price ?? "--"} />
 
         <TrackButton onClick={handleTrack} />
+
+        <button
+          type="button"
+          onClick={handleCheckPrices}
+          disabled={checkingPrices || productsLoading}
+          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {checkingPrices ? "Checking prices..." : "🔄 Check Prices Now"}
+        </button>
       </section>
       <div className="space-y-3">
         {productsLoading ? (

@@ -4,8 +4,12 @@ export type GetProductMessage = {
   type: "GET_PRODUCT";
 };
 
-export type ExtensionMessage = GetProductMessage;
+export type ExtensionMessage = GetProductMessage | CheckPricesMessage;
 
 export type GetProductResponse = {
   product: ScrapedProduct | null;
+};
+
+export type CheckPricesMessage = {
+  type: "CHECK_PRICES";
 };
