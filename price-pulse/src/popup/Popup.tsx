@@ -2,12 +2,13 @@ import Header from "./components/Header";
 import InfoCard from "./components/InfoCard";
 import TrackButton from "./components/TrackButton";
 import Footer from "./components/Footer";
-
+import ProductCard from "./components/ProductCard";
 import type { Product } from "../shared/types/product";
 import { PriceUtil } from "../shared/utils/price";
 import { useEffect, useState } from "react";
 import { useCurrentProduct } from "./hooks/useCurrentProduct";
 import { TrackingService } from "../shared/services/tracking.service";
+import { StorageService } from "../shared/storage/storage";
 
 export default function Popup() {
   const { product, loading } = useCurrentProduct();
@@ -16,12 +17,21 @@ export default function Popup() {
 
   useEffect(() => {
     async function loadProducts() {
-      const storedProducts = await TrackingService.getTrackedProducts();
+      const storedProducts = await StorageService.getProducts();
+
       setProducts(storedProducts);
     }
 
     loadProducts();
   }, []);
+
+  const handleRemove = async (id: string) => {
+    const updatedProducts = products.filter((product) => product.id !== id);
+
+    await StorageService.saveProducts(updatedProducts);
+
+    setProducts(updatedProducts);
+  };
 
   const handleTrack = async () => {
     if (!product) {
@@ -94,7 +104,15 @@ export default function Popup() {
 
         <TrackButton onClick={handleTrack} />
       </section>
-
+      <div className="space-y-3">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onRemove={handleRemove}
+          />
+        ))}
+      </div>
       <Footer totalTracked={products.length} />
     </main>
   );
