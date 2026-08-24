@@ -1,4 +1,5 @@
 import type { Product } from "../../shared/types/product";
+import { PriceUtil } from "../../shared/utils/price";
 
 interface PriceStatsProps {
   product: Product;
@@ -16,6 +17,16 @@ export default function PriceStats({ product }: PriceStatsProps) {
   const lowestPrice = Math.min(...prices);
   const highestPrice = Math.max(...prices);
 
+  const lowestDisplayPrice = PriceUtil.format(
+    lowestPrice,
+    history.find((entry) => entry.price === lowestPrice)?.displayPrice,
+  );
+
+  const highestDisplayPrice = PriceUtil.format(
+    highestPrice,
+    history.find((entry) => entry.price === highestPrice)?.displayPrice,
+  );
+
   const firstPrice = history[0].price;
   const currentPrice = product.price;
 
@@ -29,9 +40,9 @@ export default function PriceStats({ product }: PriceStatsProps) {
     <div className="mt-4 grid grid-cols-3 gap-2">
       <Stat label="Current" value={latestDisplayPrice} />
 
-      <Stat label="Lowest" value={String(lowestPrice)} />
+      <Stat label="Lowest" value={lowestDisplayPrice} />
 
-      <Stat label="Highest" value={String(highestPrice)} />
+      <Stat label="Highest" value={highestDisplayPrice} />
 
       <div className="col-span-3 rounded-lg bg-slate-50 p-3 text-center">
         <p className="text-xs text-slate-500">Since tracking</p>

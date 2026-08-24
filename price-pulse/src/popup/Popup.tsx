@@ -14,12 +14,17 @@ export default function Popup() {
   const { product, loading } = useCurrentProduct();
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
 
   useEffect(() => {
     async function loadProducts() {
-      const storedProducts = await StorageService.getProducts();
+      try {
+        const storedProducts = await StorageService.getProducts();
 
-      setProducts(storedProducts);
+        setProducts(storedProducts);
+      } finally {
+        setProductsLoading(false);
+      }
     }
 
     loadProducts();
@@ -86,12 +91,21 @@ export default function Popup() {
       <section className="flex flex-1 flex-col gap-4 p-4">
         <InfoCard label="Website" value={product?.website ?? "--"} />
 
-        <InfoCard
-          label="Image"
-          value={
-            loading ? "Loading..." : (product?.image ?? "No Image Detected")
-          }
-        />
+        {loading ? (
+          <InfoCard label="Image" value="Loading..." />
+        ) : product?.image ? (
+          <div>
+            <p className="text-xs font-medium text-slate-500">Image</p>
+
+            <img
+              src={product.image}
+              alt={product.title}
+              className="mt-2 h-24 w-full rounded-lg object-contain bg-white"
+            />
+          </div>
+        ) : (
+          <InfoCard label="Image" value="No Image Detected" />
+        )}
 
         <InfoCard
           label="Product"
@@ -105,13 +119,33 @@ export default function Popup() {
         <TrackButton onClick={handleTrack} />
       </section>
       <div className="space-y-3">
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onRemove={handleRemove}
-          />
-        ))}
+        {productsLoading ? (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 text-center">
+            <p className="text-sm text-slate-500">
+              Loading tracked products...
+            </p>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center">
+            <p className="text-sm font-semibold text-slate-700">
+              No tracked products
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Open a supported product page and track it with PricePulse.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onRemove={handleRemove}
+              />
+            ))}
+          </div>
+        )}
       </div>
       <Footer totalTracked={products.length} />
     </main>
