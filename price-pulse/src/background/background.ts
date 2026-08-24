@@ -30,3 +30,25 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
   return true;
 });
+
+chrome.notifications.onClicked.addListener(async (notificationId) => {
+  const key = `notification:${notificationId}`;
+
+  const result = await chrome.storage.local.get(key);
+
+  const productUrl = result[key] as string | undefined;
+
+  if (!productUrl) {
+    console.warn("No product URL found for notification:", notificationId);
+
+    return;
+  }
+
+  await chrome.tabs.create({
+    url: productUrl,
+  });
+
+  await chrome.storage.local.remove(key);
+
+  await chrome.notifications.clear(notificationId);
+});

@@ -47,12 +47,17 @@ export class MonitoringService {
         });
 
         if (latestPrice < oldPrice) {
-          await NotificationService.showPriceDrop(
-            product.title,
-            oldPrice,
-            latestPrice,
-            latest.price,
-          );
+          try {
+            await NotificationService.showPriceDrop(
+              product.title,
+              oldPrice,
+              latestPrice,
+              latest.price,
+              product.url,
+            );
+          } catch (error) {
+            console.error("Failed to show price notification:", error);
+          }
         }
       } finally {
         await BrowserService.closeTab(tabId);
