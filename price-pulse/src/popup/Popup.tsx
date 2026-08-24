@@ -105,9 +105,6 @@ export default function Popup() {
 
     setProducts(products);
 
-    console.log("Tracked Products:", products);
-    console.log("Count:", products.length);
-
     alert("Product added successfully!");
   };
 

@@ -4,14 +4,8 @@ import type {
   GetProductResponse,
 } from "../shared/messaging/messages";
 
-console.log("PricePulse Loaded");
-
 chrome.runtime.onMessage.addListener(
-  (
-    message: ExtensionMessage,
-    _sender,
-    sendResponse
-  ) => {
+  (message: ExtensionMessage, _sender, sendResponse) => {
     switch (message.type) {
       case "GET_PRODUCT": {
         const response: GetProductResponse = {
@@ -24,5 +18,5 @@ chrome.runtime.onMessage.addListener(
     }
 
     return true;
-  }
+  },
 );

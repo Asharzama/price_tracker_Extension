@@ -1,29 +1,44 @@
+import { getCurrentProduct } from "../services/product.service";
 import { useEffect, useState } from "react";
 import type { ScrapedProduct } from "../../shared/types/scrapedProduct";
-import { getCurrentProduct } from "../services/product.service";
 
 export function useCurrentProduct() {
   const [product, setProduct] = useState<ScrapedProduct | null>(null);
 
   const [loading, setLoading] = useState(true);
 
-  async function refresh() {
-    setLoading(true);
-
-    const result = await getCurrentProduct();
-
-    setProduct(result);
-
-    setLoading(false);
-  }
-
   useEffect(() => {
-    refresh();
+    let cancelled = false;
+
+    async function loadProduct() {
+      try {
+        const currentProduct = await getCurrentProduct();
+
+        if (!cancelled) {
+          setProduct(currentProduct);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to get current product:", error);
+
+          setProduct(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadProduct();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return {
     product,
     loading,
-    refresh,
   };
 }
