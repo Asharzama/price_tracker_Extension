@@ -1,13 +1,21 @@
-import type { Product } from "../../shared/types/product";
+import type { Product, AlertSettings } from "../../shared/types/product";
 import PriceStats from "./PriceStats";
 import PriceChart from "./PriceChart";
+import AlertSettingsPanel from "./AlertSettings";
 
 interface ProductCardProps {
   product: Product;
+
   onRemove: (id: string) => void;
+
+  onSaveAlertSettings: (
+    productId: string,
+    settings: AlertSettings,
+    targetPrice?: number,
+  ) => Promise<void>;
 }
 
-export default function ProductCard({ product, onRemove }: ProductCardProps) {
+export default function ProductCard({ product, onRemove, onSaveAlertSettings }: ProductCardProps) {
   const handleOpenProduct = async () => {
     await chrome.tabs.create({
       url: product.url,
@@ -23,6 +31,7 @@ export default function ProductCard({ product, onRemove }: ProductCardProps) {
   return (
     <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <PriceStats product={product} />
+      <AlertSettingsPanel product={product} onSave={onSaveAlertSettings} />
       <PriceChart product={product} />
       {isLowestPrice && (
         <span className="mt-2 inline-block rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700">

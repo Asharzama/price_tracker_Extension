@@ -3,7 +3,7 @@ import InfoCard from "./components/InfoCard";
 import TrackButton from "./components/TrackButton";
 import Footer from "./components/Footer";
 import ProductCard from "./components/ProductCard";
-import type { Product } from "../shared/types/product";
+import type { AlertSettings, Product } from "../shared/types/product";
 import { PriceUtil } from "../shared/utils/price";
 import { useEffect, useState } from "react";
 import { useCurrentProduct } from "./hooks/useCurrentProduct";
@@ -65,6 +65,26 @@ export default function Popup() {
     }
   };
 
+  const handleSaveAlertSettings = async (
+    productId: string,
+    settings: AlertSettings,
+    targetPrice?: number,
+  ) => {
+    const updatedProducts = products.map((product) =>
+      product.id === productId
+        ? {
+            ...product,
+            alertSettings: settings,
+            targetPrice,
+          }
+        : product,
+    );
+
+    await StorageService.saveProducts(updatedProducts);
+
+    setProducts(updatedProducts);
+  };
+
   const handleTrack = async () => {
     if (!product) {
       alert("No product detected.");
@@ -87,6 +107,13 @@ export default function Popup() {
       image: product.image,
 
       createdAt: Date.now(),
+      targetPrice: undefined,
+
+      alertSettings: {
+        priceDrop: true,
+        targetPrice: false,
+        minimumDropPercentage: 10,
+      },
 
       history: [
         {
@@ -175,6 +202,7 @@ export default function Popup() {
                 key={product.id}
                 product={product}
                 onRemove={handleRemove}
+                onSaveAlertSettings={handleSaveAlertSettings}
               />
             ))}
           </div>
