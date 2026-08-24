@@ -1,4 +1,5 @@
 import { TrackingService } from "../../shared/services/tracking.service";
+import { NotificationService } from "./notification.service";
 import { BrowserService } from "./browser.service";
 import { PriceUtil } from "../../shared/utils/price";
 import { StorageService } from "../../shared/storage/storage";
@@ -33,7 +34,9 @@ export class MonitoringService {
           continue;
         }
 
-        console.log(`Price changed ${product.price} -> ${latestPrice}`);
+        const oldPrice = product.price;
+
+        console.log(`Price changed ${oldPrice} -> ${latestPrice}`);
 
         product.price = latestPrice;
 
@@ -42,6 +45,15 @@ export class MonitoringService {
           price: latestPrice,
           displayPrice: latest.price,
         });
+
+        if (latestPrice < oldPrice) {
+          await NotificationService.showPriceDrop(
+            product.title,
+            oldPrice,
+            latestPrice,
+            latest.price,
+          );
+        }
       } finally {
         await BrowserService.closeTab(tabId);
       }
