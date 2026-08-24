@@ -1,7 +1,5 @@
 export interface PriceHistory {
-  price: number;
-
-  displayPrice: string;
-
   checkedAt: number;
+  price: number;
+  displayPrice: string;
 }

@@ -4,7 +4,7 @@ import TrackButton from "./components/TrackButton";
 import Footer from "./components/Footer";
 
 import type { Product } from "../shared/types/product";
-import { parsePrice } from "../shared/utils/price";
+import { PriceUtil } from "../shared/utils/price";
 import { useEffect, useState } from "react";
 import { useCurrentProduct } from "./hooks/useCurrentProduct";
 import { TrackingService } from "../shared/services/tracking.service";
@@ -24,87 +24,73 @@ export default function Popup() {
   }, []);
 
   const handleTrack = async () => {
-  if (!product) {
-    alert("No product detected.");
-    return;
-  }
+    if (!product) {
+      alert("No product detected.");
+      return;
+    }
 
-  if (await TrackingService.isTracked(product.url)) {
-    alert("Already tracking this product.");
-    return;
-  }
+    if (await TrackingService.isTracked(product.url)) {
+      alert("Already tracking this product.");
+      return;
+    }
 
-  const newProduct: Product = {
-  id: crypto.randomUUID(),
+    const newProduct: Product = {
+      id: crypto.randomUUID(),
+      title: product.title,
+      price: PriceUtil.parse(product.price),
+      website: product.website,
 
-  title: product.title,
+      url: product.url,
 
-  website: product.website,
+      image: product.image,
 
-  url: product.url,
+      createdAt: Date.now(),
 
-  image: product.image,
+      history: [
+        {
+          price: PriceUtil.parse(product.price),
 
-  createdAt: Date.now(),
+          displayPrice: product.price,
 
-  history: [
-    {
-      price: parsePrice(product.price),
+          checkedAt: Date.now(),
+        },
+      ],
+    };
 
-      displayPrice: product.price,
+    await TrackingService.trackProduct(newProduct);
 
-      checkedAt: Date.now(),
-    },
-  ],
-};
+    const products = await TrackingService.getTrackedProducts();
 
-  await TrackingService.trackProduct(newProduct);
+    setProducts(products);
 
-  const products = await TrackingService.getTrackedProducts();
+    console.log("Tracked Products:", products);
+    console.log("Count:", products.length);
 
-  setProducts(products);
-
-  console.log("Tracked Products:", products);
-console.log("Count:", products.length);
-
-  alert("Product added successfully!");
-};
+    alert("Product added successfully!");
+  };
 
   return (
     <main className="flex min-h-[500px] w-[360px] flex-col bg-slate-50">
-      <Header
-        title="🟢 PricePulse"
-        subtitle="Your Smart Price Tracker"
-      />
+      <Header title="🟢 PricePulse" subtitle="Your Smart Price Tracker" />
 
       <section className="flex flex-1 flex-col gap-4 p-4">
-        <InfoCard
-          label="Website"
-          value={product?.website ?? "--"}
-        />
+        <InfoCard label="Website" value={product?.website ?? "--"} />
 
-<InfoCard
+        <InfoCard
           label="Image"
           value={
-            loading
-              ? "Loading..."
-              : product?.image ?? "No Image Detected"
+            loading ? "Loading..." : (product?.image ?? "No Image Detected")
           }
         />
 
         <InfoCard
           label="Product"
           value={
-            loading
-              ? "Loading..."
-              : product?.title ?? "No Product Detected"
+            loading ? "Loading..." : (product?.title ?? "No Product Detected")
           }
         />
 
-        <InfoCard
-          label="Price"
-          value={product?.price ?? "--"}
-        />
+        <InfoCard label="Price" value={product?.price ?? "--"} />
 
         <TrackButton onClick={handleTrack} />
       </section>

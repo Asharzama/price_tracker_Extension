@@ -1,5 +1,9 @@
-export function parsePrice(price: string): number {
-  const numeric = price.replace(/[^\d.]/g, "");
+export class PriceUtil {
+  static parse(price: string): number {
+    const value = price.replace(/[^0-9.,]/g, "");
 
-  return Number(numeric);
+    return Number(
+      value.replace(",", "")
+    );
+  }
 }
