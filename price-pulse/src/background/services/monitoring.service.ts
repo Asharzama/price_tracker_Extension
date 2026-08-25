@@ -1,4 +1,5 @@
 import { TrackingService } from "../../shared/services/tracking.service";
+import { AlertService } from "./alert.service";
 import { NotificationService } from "./notification.service";
 import { BrowserService } from "./browser.service";
 import { PriceUtil } from "../../shared/utils/price";
@@ -36,7 +37,17 @@ export class MonitoringService {
           displayPrice: latest.price,
         });
 
-        if (latestPrice < oldPrice) {
+        const alertResult = AlertService.evaluate(product, latestPrice);
+
+        if (alertResult.targetReached !== undefined) {
+          product.targetPriceAlerted = alertResult.targetReached;
+        }
+
+        if (alertResult.priceDropReached !== undefined) {
+          product.priceDropAlerted = alertResult.priceDropReached;
+        }
+        
+        if (alertResult.shouldNotify) {
           try {
             await NotificationService.showPriceDrop(
               product.title,
@@ -44,6 +55,7 @@ export class MonitoringService {
               latestPrice,
               latest.price,
               product.url,
+              alertResult.reason,
             );
           } catch (error) {
             console.error("Failed to show price notification:", error);

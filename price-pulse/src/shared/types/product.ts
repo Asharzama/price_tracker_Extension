@@ -20,6 +20,10 @@ export interface Product {
   targetPrice?: number;
 
   alertSettings?: AlertSettings;
+
+  targetPriceAlerted?: boolean;
+
+  priceDropAlerted?: boolean;
 }
 
 export interface AlertSettings {
