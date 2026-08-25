@@ -1,14 +1,14 @@
 import type { ScrapedProduct } from "../shared/types/scrapedProduct";
-import { scrapeAmazon } from "./sites/amazon";
+import type { SiteScraper } from "./sites/site-scraper";
+import { AmazonScraper } from "./sites/amazon";
+import { FlipkartScraper } from "./sites/flipkart";
+
+const scrapers: SiteScraper[] = [new AmazonScraper(), new FlipkartScraper()];
 
 export function scrapeCurrentSite(): ScrapedProduct | null {
-  const host = window.location.hostname;
+  const hostname = window.location.hostname;
 
-  switch (true) {
-    case host.includes("amazon."):
-      return scrapeAmazon();
+  const scraper = scrapers.find((scraper) => scraper.canHandle(hostname));
 
-    default:
-      return null;
-  }
+  return scraper?.scrape() ?? null;
 }
