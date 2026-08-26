@@ -31,6 +31,7 @@ export class FlipkartScraper implements SiteScraper {
     return {
       title,
       price,
+      currency: "INR",
       website: window.location.hostname,
       url: window.location.href,
       image,

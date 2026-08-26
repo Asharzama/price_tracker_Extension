@@ -101,7 +101,7 @@ export default function Popup() {
       title: product.title,
       price: PriceUtil.parse(product.price),
       website: product.website,
-
+      currency: product.currency,
       url: product.url,
 
       image: product.image,

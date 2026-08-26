@@ -1,6 +1,18 @@
 import type { ScrapedProduct } from "../../shared/types/scrapedProduct";
 import type { SiteScraper } from "./site-scraper";
 
+function getAmazonCurrency(hostname: string): string {
+  if (hostname.endsWith(".in")) {
+    return "INR";
+  }
+
+  if (hostname.endsWith(".com")) {
+    return "USD";
+  }
+
+  return "UNKNOWN";
+}
+
 export class AmazonScraper implements SiteScraper {
   canHandle(hostname: string): boolean {
     return hostname.includes("amazon.");
@@ -27,6 +39,7 @@ export class AmazonScraper implements SiteScraper {
       website: window.location.hostname,
       url: window.location.href,
       image,
+      currency: getAmazonCurrency(window.location.hostname),
     };
   }
 }

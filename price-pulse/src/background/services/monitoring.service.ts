@@ -10,32 +10,28 @@ export class MonitoringService {
     const products = await TrackingService.getTrackedProducts();
 
     for (const product of products) {
-      const tabId = await BrowserService.openHiddenTab(product.url);
+      console.log(`Checking: ${product.title}`);
+
+      let tabId: number | undefined;
 
       try {
+        tabId = await BrowserService.openHiddenTab(product.url);
+
         await BrowserService.waitForTabComplete(tabId);
 
         const latest = await BrowserService.getProductFromTab(tabId);
 
         if (!latest) {
+          console.warn(`Could not scrape: ${product.title}`);
+
           continue;
         }
 
+        product.currency = latest.currency;
+        
         const latestPrice = PriceUtil.parse(latest.price);
 
-        if (latestPrice === product.price) {
-          continue;
-        }
-
         const oldPrice = product.price;
-
-        product.price = latestPrice;
-
-        product.history.push({
-          checkedAt: Date.now(),
-          price: latestPrice,
-          displayPrice: latest.price,
-        });
 
         const alertResult = AlertService.evaluate(product, latestPrice);
 
@@ -46,7 +42,15 @@ export class MonitoringService {
         if (alertResult.priceDropReached !== undefined) {
           product.priceDropAlerted = alertResult.priceDropReached;
         }
-        
+
+        if (latestPrice === oldPrice) {
+          console.log("No price change.");
+
+          continue;
+        }
+
+        console.log(`Price changed ${oldPrice} -> ${latestPrice}`);
+
         if (alertResult.shouldNotify) {
           try {
             await NotificationService.showPriceDrop(
@@ -58,11 +62,28 @@ export class MonitoringService {
               alertResult.reason,
             );
           } catch (error) {
-            console.error("Failed to show price notification:", error);
+            console.error("Failed to show notification:", error);
           }
         }
+
+        product.price = latestPrice;
+
+        product.history.push({
+          checkedAt: Date.now(),
+          price: latestPrice,
+          displayPrice: latest.price,
+          currency: latest.currency,
+        });
+      } catch (error) {
+        console.error(`Failed to monitor ${product.title}:`, error);
       } finally {
-        await BrowserService.closeTab(tabId);
+        if (tabId !== undefined) {
+          try {
+            await BrowserService.closeTab(tabId);
+          } catch (error) {
+            console.error(`Failed to close monitoring tab ${tabId}:`, error);
+          }
+        }
       }
     }
     await StorageService.saveProducts(products);

@@ -7,6 +7,8 @@ export interface Product {
 
   price: number;
 
+  currency?: string;
+
   image?: string;
 
   website: string;
