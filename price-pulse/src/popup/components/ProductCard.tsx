@@ -2,6 +2,8 @@ import type { Product, AlertSettings } from "../../shared/types/product";
 import PriceStats from "./PriceStats";
 import PriceChart from "./PriceChart";
 import AlertSettingsPanel from "./AlertSettings";
+import { PriceIntelligenceService } from "../../shared/services/price-intelligence.service";
+import { formatPrice } from "../../shared/utils/price";
 
 interface ProductCardProps {
   product: Product;
@@ -15,12 +17,20 @@ interface ProductCardProps {
   ) => Promise<void>;
 }
 
-export default function ProductCard({ product, onRemove, onSaveAlertSettings }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onRemove,
+  onSaveAlertSettings,
+}: ProductCardProps) {
   const handleOpenProduct = async () => {
     await chrome.tabs.create({
       url: product.url,
     });
   };
+
+  const statistics = PriceIntelligenceService.calculateStatistics(
+    product.history,
+  );
 
   const lowestPrice = Math.min(...product.history.map((entry) => entry.price));
 
@@ -59,6 +69,56 @@ export default function ProductCard({ product, onRemove, onSaveAlertSettings }: 
           <p className="text-xs text-slate-500">{product.website}</p>
         </div>
       </div>
+
+      {statistics && (
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="rounded-lg bg-slate-100 p-2 text-center">
+            <p className="text-[10px] text-slate-500">Lowest</p>
+
+            <p className="text-xs font-semibold text-slate-800">
+              {formatPrice(statistics.lowest, product.currency)}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-slate-100 p-2 text-center">
+            <p className="text-[10px] text-slate-500">Average</p>
+
+            <p className="text-xs font-semibold text-slate-800">
+              {formatPrice(statistics.average, product.currency)}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-slate-100 p-2 text-center">
+            <p className="text-[10px] text-slate-500">Highest</p>
+
+            <p className="text-xs font-semibold text-slate-800">
+              {formatPrice(statistics.highest, product.currency)}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {statistics && (
+        <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3">
+          <p className="text-xs font-medium text-slate-500">Price Insight</p>
+
+          <p className="mt-1 text-sm font-semibold text-slate-800">
+            {statistics.position === "LOW" &&
+              "🔥 Current price is relatively low"}
+
+            {statistics.position === "AVERAGE" &&
+              "📊 Current price is around the historical average"}
+
+            {statistics.position === "HIGH" &&
+              "⚠️ Current price is relatively high"}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Current price is {statistics.positionPercentage.toFixed(0)}% of the
+            way from the historical low to the historical high.
+          </p>
+        </div>
+      )}
 
       <div className="mt-3 flex gap-2">
         <button

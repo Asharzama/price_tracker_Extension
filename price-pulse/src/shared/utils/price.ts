@@ -16,3 +16,15 @@ export class PriceUtil {
     });
   }
 }
+
+export function formatPrice(price: number, currency?: string): string {
+  if (!currency) {
+    return price.toFixed(2);
+  }
+
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 2,
+  }).format(price);
+}
